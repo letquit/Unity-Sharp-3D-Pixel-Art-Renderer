@@ -67,6 +67,43 @@ MonoBehaviour:
     - MaskCamera
   compositeShader: {fileID: 4800000, guid: 488d1ee0b5efc284c89a609109be7444, type: 3}
   _lastPaletteCount: 32
+--- !u!114 &-6054937737825124468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521933c422ef94aa58e7d435b6f8921a, type: 3}
+  m_Name: WideOutline
+  m_EditorClassIdentifier: Linework::Linework.WideOutline.WideOutline
+  m_Active: 1
+  settings: {fileID: 11400000, guid: 1d8fb7b927b1d3c4da3bf71b653699b0, type: 2}
+  shaders:
+    mask: {fileID: 4800000, guid: 1ed7bc804a124d559675facf61722b63, type: 3}
+    silhouette: {fileID: 4800000, guid: 2a1be836d8f24bbb91714e9a51f8fec1, type: 3}
+    silhouetteInstanced: {fileID: 4800000, guid: 85d004b6af6cd48209d21826b2f0a5a3, type: 3}
+    outline: {fileID: 4800000, guid: 90865e175cad4ccd80a2e1965c38f3e9, type: 3}
+    clear: {fileID: 4800000, guid: 9d6033fe8c48f4059a892093b5eec20b, type: 3}
+--- !u!114 &-2896880744585843033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f513a53c9ad43a3860c8a56ea7dd26b, type: 3}
+  m_Name: SurfaceFill
+  m_EditorClassIdentifier: Linework::Linework.SurfaceFill.SurfaceFill
+  m_Active: 1
+  settings: {fileID: 11400000, guid: 0ca1f792d56df3f4fa27013e3cbf3959, type: 2}
+  shaders:
+    mask: {fileID: 4800000, guid: 7db39fa69b214149be63e199c01483e7, type: 3}
+    fill: {fileID: 4800000, guid: 60bd843b88e8e491eab96dca4a73ce68, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,7 +131,9 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: -6811450396562132088}
-  m_RendererFeatureMap: ad6b866f10d7b46c8873b8f3f3dd78a1
+  - {fileID: -6054937737825124468}
+  - {fileID: -2896880744585843033}
+  m_RendererFeatureMap: ad6b866f10d7b46c8873b8f3f3dd78a18c7fd337358af8aba7ae4aa64f36ccd7
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
