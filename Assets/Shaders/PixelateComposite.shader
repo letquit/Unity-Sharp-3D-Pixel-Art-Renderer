@@ -3,15 +3,15 @@ Shader "Hidden/PixelateComposite"
     Properties
     {
         _EdgeColor("Edge Color", Color) = (0,0,0,1)
-        _DepthEdgeThreshold("Depth Edge Threshold", Float) = 0.01
-        _NormalEdgeThreshold("Normal Edge Threshold", Float) = 0.20
-        _EdgeStrength("Edge Strength", Range(0,1)) = 1
-        _EdgeWidthPx("Edge Width (px)", Range(0.25,2)) = 0.75
+        _EdgeStrength("Edge Strength", Range(0,2)) = 1
+        _EdgeWidthPx("Edge Width (px)", Range(0.25,2)) = 1
+        _EdgeDepthBias("Silhouette Depth Bias", Float) = 0.0015
+        _EdgeNormalBias("Crease Normal Bias", Float) = 0.06
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        Tags { "RenderPipeline"="UniversalPipeline" }
         ZWrite Off ZTest Always Cull Off
 
         Pass
@@ -19,77 +19,43 @@ Shader "Hidden/PixelateComposite"
             Name "PixelateComposite"
 
             HLSLPROGRAM
+            #pragma target 4.5
             #pragma vertex Vert
             #pragma fragment Frag
-            #pragma target 4.5
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
 
             TEXTURE2D(_LowResTex);
+            TEXTURE2D(_PixelArtMaskTex);
+            SAMPLER(sampler_PixelArtMaskTex);
 
             float4 _LowResTex_TexelSize;
             int _EnableQuant;
-            int _UseLabDistance;
             int _PaletteCount;
-            float4 _Palette[64];
+            float4 _Palette[256];
 
             float4 _EdgeColor;
-            float _DepthEdgeThreshold;
-            float _NormalEdgeThreshold;
             float _EdgeStrength;
             float _EdgeWidthPx;
+            float _EdgeDepthBias;
+            float _EdgeNormalBias;
+            float _HasMaskTex;
+            float _MaskThreshold;
 
-            struct Attributes
-            {
-                uint vertexID : SV_VertexID;
-            };
+            float _DebugView;    // 0 normal,1 mask,2 edge,3 pass tint
+            float _PreQuantLift;
 
-            struct Varyings
-            {
-                float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-            };
+            struct Attributes { uint vertexID : SV_VertexID; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
 
             Varyings Vert(Attributes v)
             {
                 Varyings o;
-                o.uv = GetFullScreenTriangleTexCoord(v.vertexID);
                 o.positionCS = GetFullScreenTriangleVertexPosition(v.vertexID);
+                o.uv = GetFullScreenTriangleTexCoord(v.vertexID);
                 return o;
-            }
-
-            float3 rgb2xyz(float3 rgb)
-            {
-                rgb = pow(max(rgb, 0.0), 2.2);
-                float3x3 m = float3x3(
-                    0.4124564, 0.3575761, 0.1804375,
-                    0.2126729, 0.7151522, 0.0721750,
-                    0.0193339, 0.1191920, 0.9503041
-                );
-                return mul(m, rgb);
-            }
-
-            float3 xyz2lab(float3 xyz)
-            {
-                xyz /= float3(0.95047, 1.0, 1.08883);
-                float3 f = (xyz > 0.008856) ? pow(xyz, 1.0 / 3.0) : (7.787 * xyz + 16.0 / 116.0);
-                return float3(116.0 * f.y - 16.0, 500.0 * (f.x - f.y), 200.0 * (f.y - f.z));
-            }
-
-            float DistRGB(float3 a, float3 b)
-            {
-                float3 d = a - b;
-                return dot(d, d);
-            }
-
-            float DistLab(float3 a, float3 b)
-            {
-                float3 la = xyz2lab(rgb2xyz(a));
-                float3 lb = xyz2lab(rgb2xyz(b));
-                float3 d = la - lb;
-                return dot(d, d);
             }
 
             float3 QuantizePalette(float3 src)
@@ -97,70 +63,109 @@ Shader "Hidden/PixelateComposite"
                 if (_PaletteCount <= 0) return src;
                 float minDist = 1e20;
                 float3 best = src;
-
                 [loop]
                 for (int i = 0; i < _PaletteCount; i++)
                 {
                     float3 p = _Palette[i].rgb;
-                    float dist = (_UseLabDistance == 1) ? DistLab(src, p) : DistRGB(src, p);
-                    if (dist < minDist)
-                    {
-                        minDist = dist;
-                        best = p;
-                    }
+                    float3 d = src - p;
+                    float dist = dot(d, d);
+                    if (dist < minDist) { minDist = dist; best = p; }
                 }
                 return best;
             }
 
-            float DepthEdge(float2 uv, float2 stepUV)
+            float MaskRaw(float2 uv)
             {
-                float dC = SampleSceneDepth(uv);
-                float dL = SampleSceneDepth(uv + float2(-stepUV.x, 0));
-                float dR = SampleSceneDepth(uv + float2( stepUV.x, 0));
-                float dU = SampleSceneDepth(uv + float2(0,  stepUV.y));
-                float dD = SampleSceneDepth(uv + float2(0, -stepUV.y));
-
-                float diff = max(max(abs(dC - dL), abs(dC - dR)), max(abs(dC - dU), abs(dC - dD)));
-                return smoothstep(_NormalEdgeThreshold * 0.5, _NormalEdgeThreshold, diff);
+                if (_HasMaskTex < 0.5) return 1.0;
+                float a = SAMPLE_TEXTURE2D(_PixelArtMaskTex, sampler_PixelArtMaskTex, uv).a;
+                return a;
             }
 
-            float NormalEdge(float2 uv, float2 stepUV)
+            float MaskValueBinaryDilated(float2 uv, float2 stepUV)
             {
-                float3 nC = normalize(SampleSceneNormals(uv));
-                float3 nL = normalize(SampleSceneNormals(uv + float2(-stepUV.x, 0)));
-                float3 nR = normalize(SampleSceneNormals(uv + float2( stepUV.x, 0)));
-                float3 nU = normalize(SampleSceneNormals(uv + float2(0,  stepUV.y)));
-                float3 nD = normalize(SampleSceneNormals(uv + float2(0, -stepUV.y)));
+                if (_HasMaskTex < 0.5) return 1.0;
 
-                float dl = 1.0 - saturate(dot(nC, nL));
-                float dr = 1.0 - saturate(dot(nC, nR));
-                float du = 1.0 - saturate(dot(nC, nU));
-                float dd = 1.0 - saturate(dot(nC, nD));
+                float m = 0.0;
+                m = max(m, MaskRaw(uv));
+                m = max(m, MaskRaw(uv + float2( stepUV.x, 0)));
+                m = max(m, MaskRaw(uv + float2(-stepUV.x, 0)));
+                m = max(m, MaskRaw(uv + float2(0,  stepUV.y)));
+                m = max(m, MaskRaw(uv + float2(0, -stepUV.y)));
 
-                float diff = max(max(dl, dr), max(du, dd));
-                return smoothstep(_NormalEdgeThreshold * 0.5, _NormalEdgeThreshold, diff);
+                return step(_MaskThreshold, m);
+            }
+
+            bool NeighborCreatesSilhouette(float centerDepth, float2 baseUV, float2 offset)
+            {
+                float nd = SampleSceneDepth(baseUV + offset);
+                return (centerDepth - nd) > _EdgeDepthBias;
+            }
+
+            bool NeighborCreatesCrease(float centerMask, float centerDepth, float3 centerNormal, float2 baseUV, float2 offset, float2 stepUV)
+            {
+                float2 nuv = baseUV + offset;
+                float nd = SampleSceneDepth(nuv);
+
+                if (abs(nd - centerDepth) > _EdgeDepthBias * 0.75) return false;
+
+                float nMask = MaskValueBinaryDilated(nuv, stepUV);
+                if (abs(centerMask - nMask) > 0.1) return false;
+
+                float3 nn = normalize(SampleSceneNormals(nuv));
+                float diff = 1.0 - saturate(dot(centerNormal, nn));
+                return diff > _EdgeNormalBias;
             }
 
             half4 Frag(Varyings i) : SV_Target
             {
-                // 像素对齐采样
                 float2 uv = i.uv;
                 float2 pixelCoord = floor(uv / _LowResTex_TexelSize.xy);
-                float2 snappedUV = (pixelCoord + 0.5) * _LowResTex_TexelSize.xy;
+                float2 suv = (pixelCoord + 0.5) * _LowResTex_TexelSize.xy;
 
-                float4 c = SAMPLE_TEXTURE2D(_LowResTex, sampler_PointClamp, snappedUV);
+                float2 stepUV = lerp(1.0 / _ScreenParams.xy, _LowResTex_TexelSize.xy, 0.25) * _EdgeWidthPx;
+
+                float m = MaskValueBinaryDilated(suv, stepUV);
+
+                if (_DebugView > 0.5 && _DebugView < 1.5)
+                    return half4(m, m, m, 1);
+
+                half4 c = SAMPLE_TEXTURE2D(_LowResTex, sampler_PointClamp, suv);
+                c.rgb = max(c.rgb, _PreQuantLift.xxx);
 
                 if (_EnableQuant == 1)
                     c.rgb = QuantizePalette(c.rgb);
 
-                float2 stepUV = lerp(1.0 / _ScreenParams.xy, _LowResTex_TexelSize.xy, 0.1) * _EdgeWidthPx;
+                float d0 = SampleSceneDepth(suv);
+                float3 n0 = normalize(SampleSceneNormals(suv));
 
-                float eDepth = DepthEdge(snappedUV, stepUV);
-                float eNormal = NormalEdge(snappedUV, stepUV);
+                float2 o0 = float2( stepUV.x, 0);
+                float2 o1 = float2(-stepUV.x, 0);
+                float2 o2 = float2(0,  stepUV.y);
+                float2 o3 = float2(0, -stepUV.y);
+                float2 o4 = float2( stepUV.x,  stepUV.y);
+                float2 o5 = float2(-stepUV.x,  stepUV.y);
+                float2 o6 = float2( stepUV.x, -stepUV.y);
+                float2 o7 = float2(-stepUV.x, -stepUV.y);
 
-                float edge = saturate(max(eDepth, eNormal) * _EdgeStrength);
+                float e = 0.0;
+                e += (NeighborCreatesSilhouette(d0, suv, o0) || NeighborCreatesCrease(m, d0, n0, suv, o0, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o1) || NeighborCreatesCrease(m, d0, n0, suv, o1, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o2) || NeighborCreatesCrease(m, d0, n0, suv, o2, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o3) || NeighborCreatesCrease(m, d0, n0, suv, o3, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o4) || NeighborCreatesCrease(m, d0, n0, suv, o4, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o5) || NeighborCreatesCrease(m, d0, n0, suv, o5, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o6) || NeighborCreatesCrease(m, d0, n0, suv, o6, stepUV)) ? 1 : 0;
+                e += (NeighborCreatesSilhouette(d0, suv, o7) || NeighborCreatesCrease(m, d0, n0, suv, o7, stepUV)) ? 1 : 0;
 
-                c.rgb = lerp(c.rgb, _EdgeColor.rgb, edge);
+                e = saturate((e / 8.0) * _EdgeStrength) * m;
+
+                if (_DebugView > 1.5 && _DebugView < 2.5)
+                    return half4(e, e, e, 1);
+
+                if (_DebugView > 2.5)
+                    c.rgb = lerp(c.rgb, float3(1, 0, 1), 0.25);
+
+                c.rgb = lerp(c.rgb, _EdgeColor.rgb, e);
                 return c;
             }
             ENDHLSL

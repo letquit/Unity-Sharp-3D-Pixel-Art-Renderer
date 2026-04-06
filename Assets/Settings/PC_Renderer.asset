@@ -14,11 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelateRendererFeature
   m_Active: 1
   settings:
+    edgeColor: {r: 0, g: 0, b: 0, a: 1}
+    edgeStrength: 1.2
+    edgeWidthPx: 1.2
+    edgeDepthBias: 0.001
+    edgeNormalBias: 0.04
     passEvent: 500
-    pixelScale: 12
-    enablePaletteQuantization: 0
-    useLabDistance: 0
-    paletteColorCount: 16
+    pixelScale: 4
+    enablePaletteQuantization: 1
+    useLabDistance: 1
+    paletteColorCount: 32
+    preQuantLift: 0.04
     palette:
     - {r: 0, g: 0, b: 0, a: 1}
     - {r: 0.11372549, g: 0.16862746, b: 0.3254902, a: 1}
@@ -36,7 +42,31 @@ MonoBehaviour:
     - {r: 0.5137255, g: 0.4627451, b: 0.6117647, a: 1}
     - {r: 1, g: 0.46666667, b: 0.65882355, a: 1}
     - {r: 1, g: 0.8, b: 0.6666667, a: 1}
+    - {r: 0.69479996, g: 0.12589777, b: 0.12589777, a: 1}
+    - {r: 0.07888704, g: 0.24665892, b: 0.65385, a: 1}
+    - {r: 0.4410133, g: 0.68709993, b: 0.09612526, a: 1}
+    - {r: 0.72805, g: 0.14593762, b: 0.6555119, a: 1}
+    - {r: 0.20070893, g: 0.76899993, b: 0.67399085, a: 1}
+    - {r: 0.80995, g: 0.5577353, b: 0.2604394, a: 1}
+    - {r: 0.45616367, g: 0.3251288, b: 0.85089993, a: 1}
+    - {r: 0.4159383, g: 0.89185, b: 0.39477736, a: 1}
+    - {r: 0.93280005, g: 0.37013504, b: 0.55827206, a: 1}
+    - {r: 0.3274235, g: 0.73213017, b: 0.97375, a: 1}
+    - {r: 0.92675275, g: 0.9853, b: 0.2716473, a: 1}
+    - {r: 0.7888853, g: 0.2031769, b: 0.94435, a: 1}
+    - {r: 0.13966572, g: 0.9034, b: 0.52034783, a: 1}
+    - {r: 0.86245, g: 0.25072017, b: 0.09137653, a: 1}
+    - {r: 0.13677964, g: 0.19507818, b: 0.8215, a: 1}
+    - {r: 0.40464267, g: 0.78055006, b: 0.17722389, a: 1}
+    useExternalMaskTexture: 1
+    externalMaskTexture: {fileID: 8400000, guid: e15964ad886d939499d07715f0bd10e0, type: 2}
+    maskThreshold: 0.1
+    debugView: 0
+    forceNoMask: 0
+    skipCameraNames:
+    - MaskCamera
   compositeShader: {fileID: 4800000, guid: 488d1ee0b5efc284c89a609109be7444, type: 3}
+  _lastPaletteCount: 32
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
