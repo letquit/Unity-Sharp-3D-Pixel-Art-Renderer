@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Water
+  m_Shader: {fileID: 4800000, guid: 7561448e67cadef48ac476e56a1cef53, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _DistortionMap:
+        m_Texture: {fileID: 2800000, guid: bef9da0015d0c7245979259c74c60e02, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoamTex:
+        m_Texture: {fileID: 2800000, guid: 6157ddf5f60396145ac6941a1eb830f3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaterReflectionTex:
+        m_Texture: {fileID: 8400000, guid: 487d8960f0d7aef4097af74410681259, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WavePatternTex:
+        m_Texture: {fileID: 2800000, guid: faba9391715325440b323d1225596880, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _DebugWaveMask: 0
+    - _DistortionStrength: 0.02
+    - _FadeDistance: 0
+    - _FoamSpeed: 0.2
+    - _FoamThreshold: 0.5
+    - _FoamTiling: 5
+    - _PixelStep: 4
+    - _ReflectionStrength: 0.45
+    - _RefractionAmplitude: 0.01
+    - _RefractionFrequency: 6
+    - _RefractionSpeed: 0.35
+    - _ShoreFoamWidth: 0.4
+    - _WaterClearness: 0.55
+    - _WaterDepth: 3
+    - _WaveAmp: 0.2
+    - _WaveFreq: 0.8
+    - _WavePatternSoftness: 0.12
+    - _WavePatternStrength: 1.5
+    - _WavePatternThreshold: 0.5
+    - _WavePatternTiling: 0.3
+    - _WaveSpeed: 1.2
+    m_Colors:
+    - _BaseColor: {r: 0.5, g: 0.7, b: 1, a: 0.72156864}
+    - _ColorDeep: {r: 0.049999967, g: 0.19999993, b: 0.34999993, a: 1}
+    - _ColorShallow: {r: 0.45, g: 0.75, b: 0.9, a: 0.7529412}
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WaveHighlightColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WavePatternSpeed: {r: 0.06, g: -0.03, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

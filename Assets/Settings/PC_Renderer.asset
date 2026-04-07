@@ -22,7 +22,7 @@ MonoBehaviour:
     passEvent: 500
     pixelScale: 4
     enablePaletteQuantization: 1
-    useLabDistance: 1
+    useLabDistance: 0
     paletteColorCount: 32
     preQuantLift: 0.04
     palette:
@@ -59,7 +59,7 @@ MonoBehaviour:
     - {r: 0.13677964, g: 0.19507818, b: 0.8215, a: 1}
     - {r: 0.40464267, g: 0.78055006, b: 0.17722389, a: 1}
     useExternalMaskTexture: 1
-    externalMaskTexture: {fileID: 8400000, guid: e15964ad886d939499d07715f0bd10e0, type: 2}
+    externalMaskTexture: {fileID: 0}
     maskThreshold: 0.1
     debugView: 0
     forceNoMask: 0

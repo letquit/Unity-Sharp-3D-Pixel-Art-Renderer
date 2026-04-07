@@ -9,10 +9,14 @@ public class MaskCameraFollower : MonoBehaviour
     private void LateUpdate()
     {
         if (sourceCamera == null) return;
+
         var dst = GetComponent<Camera>();
         if (dst == null) return;
 
-        transform.SetPositionAndRotation(sourceCamera.transform.position, sourceCamera.transform.rotation);
+        transform.SetPositionAndRotation(
+            sourceCamera.transform.position,
+            sourceCamera.transform.rotation
+        );
 
         dst.orthographic = sourceCamera.orthographic;
         dst.fieldOfView = sourceCamera.fieldOfView;
