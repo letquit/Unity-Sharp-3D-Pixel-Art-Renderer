@@ -104,6 +104,36 @@ MonoBehaviour:
   shaders:
     mask: {fileID: 4800000, guid: 7db39fa69b214149be63e199c01483e7, type: 3}
     fill: {fileID: 4800000, guid: 60bd843b88e8e491eab96dca4a73ce68, type: 3}
+--- !u!114 &-1578988926155255265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7c55b9ae738cea4fbd5c7e399be51c9, type: 3}
+  m_Name: PixelArtGodRaysFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PixelArtGodRaysFeature
+  m_Active: 1
+  settings:
+    shader: {fileID: 4800000, guid: fcd6138c12467414d93973249fe73d12, type: 3}
+    passEvent: 600
+    intensity: 0.5
+    raymarchSteps: 64
+    maxDistance: 120
+    rayDensity: 0.5
+    scattering: 1
+    godRayColor: {r: 1, g: 0.95, b: 0.85, a: 1}
+    cloudHeight: 30
+    cloudScale: 0.3
+    cloudThreshold: 0.3
+    cloudBands: 0
+    cloudSpeed: 0.25
+    cloudWind: {x: 0.45, y: -0.4}
+    cloudShadowStrength: 0.5
+    useMainLightShadow: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -133,7 +163,8 @@ MonoBehaviour:
   - {fileID: -6811450396562132088}
   - {fileID: -6054937737825124468}
   - {fileID: -2896880744585843033}
-  m_RendererFeatureMap: ad6b866f10d7b46c8873b8f3f3dd78a18c7fd337358af8aba7ae4aa64f36ccd7
+  - {fileID: -1578988926155255265}
+  m_RendererFeatureMap: ad6b866f10d7b46c8873b8f3f3dd78a18c7fd337358af8aba7ae4aa64f36ccd71f923d00f04d16ea
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
